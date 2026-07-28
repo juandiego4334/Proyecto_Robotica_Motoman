@@ -89,16 +89,15 @@ flowchart TD
 
 Para la Etapa 3 del proyecto se diseñó una herramienta terminal para el robot Yaskawa Motoman MH6, denominado **“El Chambeador”**, cuya función es sostener el cautín y permitir la ejecución controlada de los puntos de soldadura sobre la PCB.
 
-La herramienta se dividió en dos componentes principales: una **base de fijación** y un **cuerpo tubular portacautín**. Esta configuración modular facilita la fabricación mediante impresión 3D, el montaje del cautín y el reemplazo independiente de cualquiera de las piezas.
+La herramienta se dividió en dos componentes principales: una **base de fijación** y un **cuerpo tubular portacautín**, donde esta configuración modular facilita la fabricación mediante impresión 3D, el montaje del cautín y el reemplazo independiente de cualquiera de las piezas.
 
-![Base de fijación de la herramienta](./IMG/BASE.png)
+<img src="./IMG/BASE.png" alt="Base de fijación de la herramienta" width="400">
 
 *Figura 1. Base de fijación y sistema de acople de la herramienta.*
 
 La base incorpora los orificios necesarios para su sujeción al sistema de montaje del robot. En su parte frontal se diseñó un alojamiento circular con ranuras que recibe las pestañas del cuerpo portacautín.
 
-![Cuerpo tubular portacautín](./IMG/PUNTA.png)
-
+<img src="./IMG/PUNTA.png" alt="Cuerpo tubular portacautín" width="400">
 *Figura 2. Cuerpo tubular encargado de alojar y sujetar el cautín.*
 
 ### Sistema de acople
@@ -123,29 +122,24 @@ La rigidez y la precarga del resorte deben ajustarse de manera que exista sufici
 
 ### Justificación del diseño
 
-El diseño modular y el sistema de compensación axial permiten utilizar un cautín convencional como herramienta terminal para realizar pruebas de soldadura robotizada. La fabricación aditiva hizo posible obtener rápidamente una geometría adaptada tanto al sistema de montaje del robot como al diámetro del cautín, reduciendo el costo y el tiempo de fabricación del prototipo.
+El diseño modular y el sistema de compensación axial permiten utilizar un cautín convencional como herramienta terminal para realizar pruebas de soldadura robotizada, donde la fabricación por manufactura aditiva hizo posible obtener rápidamente una geometría adaptada tanto al sistema de montaje del robot como al diámetro del cautín, reduciendo el costo y el tiempo de fabricación del prototipo.
 
-La separación en dos piezas también mejora el acceso durante el ensamblaje y facilita las operaciones de mantenimiento. En caso de desgaste, deformación o cambio del cautín, el cuerpo portacautín puede sustituirse sin fabricar nuevamente la base completa.
+En el caso de la modularidad de la herramienta, la separación en dos piezas también mejora el acceso durante el ensamblaje y facilita las operaciones de mantenimiento, y a su vez, permite que en caso de desgaste, deformación o cambio del cautín, el cuerpo portacautín puede sustituirse sin fabricar nuevamente la base completa.
 
 ### Recomendaciones de uso y mejora
 
-Debido a que la herramienta fue fabricada mediante impresión 3D en material polimérico, se recomienda emplearla principalmente en **pruebas controladas y rutinas de soldadura de corta duración**. La zona frontal, al encontrarse más próxima al elemento calefactor, puede acumular calor y sufrir ablandamiento o deformación progresiva.
+Debido a que la herramienta fue fabricada mediante impresión 3D en PLA, se recomienda emplearla principalmente en **pruebas controladas y rutinas de soldadura de corta duración**, esto debido a que la zona frontal, al encontrarse más próxima al elemento calefactor, ante tiempos prolongados acumula calor, llegando a sufrir ablandamiento o deformación progresiva.
 
 Para aumentar la seguridad y la vida útil del sistema se recomienda:
 
 - Evitar el contacto directo entre la parte caliente del cautín y las piezas impresas.
-- Incorporar un escudo térmico delgado de acero inoxidable, separado del polímero mediante una cámara de aire.
+- Incorporar un escudo térmico delgado de acero inoxidable, separado del polímero.
 - Añadir una arandela o buje aislante de mica, cerámica u otro material resistente a altas temperaturas.
 - Realizar pausas de enfriamiento entre ciclos prolongados.
 - Inspeccionar periódicamente el acople, las pestañas y la zona frontal para detectar deformaciones.
 - Para una operación repetitiva o continua, sustituir la sección más cercana al calor por un inserto metálico o fabricar esa zona con un material de mayor resistencia térmica.
 
 Estas mejoras permitirían reducir la transferencia de calor por conducción y radiación hacia las piezas impresas, manteniendo la precisión del montaje y disminuyendo el riesgo de que la herramienta pierda su geometría durante la operación.
-
-
-
-
-
 
 
 ## 4. Simulación desde RoboDK
