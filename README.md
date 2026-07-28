@@ -118,4 +118,6 @@ robot.MoveJ(Home)
 print("PCB's Completadas")
 ```
 
-## 10. Vídeos de simulación y de implementación 
+## 10. Descripción del código con interfaz gráfica
+
+## 11. Vídeos de simulación y de implementación 
