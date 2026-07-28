@@ -9,7 +9,13 @@ Proyecto final robótica semestre 2026-I
 ## 4. Simulación desde RoboDK
 
 ## 5.Código fuente utilizado
-
+Debido a que RoboDK no permite una comunicación en tiempo real de el programa y el robot, la interfaz gráfica no se puede comunicar con el robot en tiempo real. Es por esto que se tienen 2 códigos, uno donde se simula la comunicación real entre la interfaz gráfica y el robot, y el código aplicado en la realidad.
+### 5.1 Código con interfaz gráfica
+El programa en Python puede consultarse aquí:
+[Ver código](src/HMI_Simulacion.py)
+### 5.2 Código implementado en el robot real
+El programa en Python puede consultarse aquí:
+[Ver código](src/Codigo_Implementacio_Robot.py)
 ## 6. Comparación manual vs automatizado
 
 ## 7. Diagrama de flujo de acciones del robot
@@ -17,9 +23,9 @@ Proyecto final robótica semestre 2026-I
 ## 8. Plano de planta de la ubicación de cada uno de los elementos
 
 ## 9. Descripción del código implementado para la soldadura
-Debido a que RoboDK no permite una comunicación en tiempo real de el programa y el robot, la interfaz gráfica no se puede comunicar con el robot en tiempo real. Es por esto que se tienen 2 códigos, uno donde se simula la comunicación real entre la interfaz gráfica y el robot, y el código aplicado en la realidad, este 
+
 El programa en Python puede consultarse aquí:
-[Ver código](.src/Codigo_Implementacio_Robot.py)
+[Ver código](src/Codigo_Implementacio_Robot.py)
  
 Este programa conecta con el robot físico a través de RoboDK y ejecuta una rutina automática de soldadura sobre una o varias PCB (placas de circuito impreso), calculando cada punto a partir de transformaciones locales respecto a una pose de referencia. A continuación se explican las funciones y parámetros nuevos vistos.
  
