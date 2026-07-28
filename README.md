@@ -27,7 +27,7 @@ El programa en Python puede consultarse aquí:
 El programa en Python puede consultarse aquí:
 [Ver código](src/Codigo_Implementacio_Robot.py)
  
-Este programa conecta con el robot físico a través de RoboDK y ejecuta una rutina automática de soldadura sobre una o varias PCB (placas de circuito impreso), calculando cada punto a partir de transformaciones locales respecto a una pose de referencia. A continuación se explican las funciones y parámetros nuevos vistos.
+Este programa conecta con el robot físico a través de RoboDK y ejecuta una rutina automática de soldadura sobre una PCB (placas de circuito impreso), calculando cada punto a partir de transformaciones locales respecto a una pose de referencia. A continuación se explican las funciones y parámetros nuevos vistos.
  
 ### 9.1 Importación de librerías
 Además de robolink y robomath (comunicación con RoboDK y funciones matemáticas), se importa la librería time, que permite generar pausas controladas durante la ejecución, por ejemplo mientras el robot se estabiliza en una posición o mientras dura la soldadura.
@@ -82,7 +82,7 @@ puntos_soldadura = [
 ```
  
 ### 9.6 Obtención de la pose de referencia (cinemática directa)
-El robot se mueve primero al punto de aproximación. Luego, con `SolveFK`, se calcula la pose cartesiana (posición y orientación) correspondiente a las articulaciones de `PCB`, sin necesidad de mover físicamente el robot hasta ese punto. Esta pose (`pose_pcb`) se usa como referencia para ubicar todos los puntos de soldadura.
+El robot se mueve primero al punto de aproximación. Luego, con `SolveFK`, se calcula la pose cartesiana (posición y orientación) correspondiente a las articulaciones descritas en el arreglo  `PCB`, sin necesidad de mover físicamente el robot hasta ese punto. Esta pose (`pose_pcb`) se usa como referencia para ubicar todos los puntos de soldadura.
 ```python
 robot.MoveJ(aprox)
 time.sleep(2)
