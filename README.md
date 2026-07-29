@@ -231,9 +231,96 @@ En la etapa de simulación, una vez desarrollado el código de control, se proce
 El código fuente desarrollado se dividió en dos componentes principales: la interfaz HMI y el módulo de control del robot. Debido a que RoboDK no permite una comunicación en tiempo real entre el programa y el robot, la interfaz gráfica no puede interactuar directamente con el manipulador físico en tiempo real. Por esta razón, se implementaron dos versiones del código: una primera destinada a simular la comunicación entre la interfaz gráfica y el robot dentro del entorno de RoboDK, y una segunda correspondiente al código aplicado en la implementación real con el robot de laboratorio.
 
 ### 5.1 Código con interfaz gráfica
-La interfaz HMI desarrollada para la estación de soldadura de PCB se estructuró como una plataforma de supervisión y control del proceso. En su panel izquierdo se ubican la selección de recetas, la tabla de componentes, la distribución de puntos de soldadura y los parámetros principales del proceso, como el pitch, el tiempo de soldadura y el número total de puntos. En la zona central se concentran las acciones de operación del robot, permitiendo ejecutar secuencias como la conexión con RoboDK, el desplazamiento a home, la aproximación, la validación de puntos y el inicio de la soldadura. Finalmente, en el panel derecho se visualiza el estado del sistema, incluyendo la condición operativa, la cantidad de puntos ejecutados y las alarmas activas. 
+La interfaz HMI fue desarrollada en *Python* utilizando las librerías *tkinter* y *ttk* para la construcción de la interfaz gráfica, *messagebox* para la gestión de mensajes, *threading* para la ejecución concurrente de la rutina de soldadura, time para la temporización del proceso, y las librerías *robolink* y *robomath* de RoboDK para la comunicación con el entorno de simulación y el manejo de operaciones cinemáticas. La interfaz permite seleccionar distintas recetas de PCB, visualizar la lista de componentes y los puntos de soldadura asociados, configurar parámetros del proceso como el pitch y el tiempo de soldadura, y ejecutar acciones como conectar RoboDK, cargar el robot, moverlo a home, desplazarlo a la pose de aproximación, validar puntos, iniciar la soldadura, pausar, detener, ejecutar una parada de emergencia y reiniciar el sistema.
+<p align="center">
+  <img src="./IMG/Interfaz%20HMI.png" alt="Interfaz HMI de la estación de soldadura PCB" width="700">
+  <br>
+  <em>Figura 7. Interfaz HMI de la estación de soldadura.</em>
+</p>
+Entre las funciones implementadas en el codigo de la interfaz HMI podemos recalcar:
+#### Conexión con RoboDK
+```python
+def conectar_robodk(self):
+    try:
+        self.RDK = Robolink()
+        self.estado.set("READY")
+        self.alarma.set("Sin fallas")
+        self.escribir_log("Conexión con RoboDK establecida.")
+    except Exception as e:
+        self.estado.set("FAULT")
+        self.alarma.set(str(e))
+```
 
-El programa en Python puede consultarse aquí:
+Esta función establece la comunicación entre la interfaz HMI y RoboDK.
+
+#### Validación de puntos
+```python
+def validar_puntos(self):
+    try:
+        if not self.robot:
+            raise Exception("Primero carga el robot.")
+        pose_pcb = self.robot.SolveFK(self.pcb)
+
+        for i, (x, y, ref, pin) in enumerate(self.obtener_puntos_mm(), start=1):
+            pose1 = pose_pcb * transl(x, y, -10)
+            pose2 = pose_pcb * transl(x, y, 1)
+            j1 = self.robot.SolveIK(pose1)
+            j2 = self.robot.SolveIK(pose2)
+            if j1 is None or j2 is None:
+                raise Exception(f"Error en punto {i}: {ref}")
+
+        self.estado.set("READY")
+        self.alarma.set("Puntos válidos")
+        self.escribir_log("Todos los puntos fueron validados.")
+    except Exception as e:
+        self.estado.set("FAULT")
+        self.alarma.set(str(e))
+        self.escribir_log(f"Validación fallida: {e}")
+```
+
+Esta función valida la alcanzabilidad de los puntos de soldadura mediante cinemática directa e inversa.
+
+#### Ejecución en hilo independiente
+```python
+def iniciar_hilo(self):
+    if self.hilo_soldadura and self.hilo_soldadura.is_alive():
+        self.escribir_log("La rutina ya está en ejecución.")
+        return
+
+    self.stop_event.clear()
+    self.proceso_detenido = False
+    self.proceso_pausado = False
+    self.emergencia = False
+
+    self.hilo_soldadura = threading.Thread(
+        target=self.rutina_soldadura,
+        daemon=True
+    )
+    self.hilo_soldadura.start()
+    self.escribir_log("Hilo de soldadura iniciado.")
+```
+
+Esta función permite ejecutar la rutina sin bloquear la interfaz gráfica.
+
+#### Parada de emergencia
+```python
+def parada_emergencia(self):
+    self.emergencia = True
+    self.proceso_detenido = True
+    self.stop_event.set()
+    self.estado.set("EMERGENCY")
+    self.alarma.set("Parada de emergencia activada.")
+    self.escribir_log("Emergencia activada.")
+    try:
+        if self.robot:
+            self.robot.Stop()
+    except:
+        pass
+```
+
+Esta función implementa la lógica de seguridad para detener el proceso de forma inmediata.
+
+El código completo del programa en Python puede consultarse aquí:
 [Ver código](src/HMI_Simulacion.py)
 
 
