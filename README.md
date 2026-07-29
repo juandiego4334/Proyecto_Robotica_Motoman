@@ -523,6 +523,11 @@ flowchart TD
 ```
 
 ## 9. Plano de planta de la ubicación de cada uno de los elementos
+A continuación se presenta el plano de planta del montaje general del proyecto final, donde se muestra la disposición del riel, el robot, la extremidad extra, la mesa y el soporte para baquela. 
+
+<p align="center">
+  <img src="IMG/Plano planta_page-0001.jpg" width="700">
+</p>
 
 ## 10. Vídeo de simulación y de implementación 
 
