@@ -227,8 +227,6 @@ El soporte está conformado por una bandeja rectangular con bordes elevados que 
 
 <p align="center">
   <img src="IMG/soporte.png" width="500">
-  <br>
-  <em>Figura 6. Cuerpo tubular encargado de alojar y sujetar el cautín.</em>
 </p>
 
 #### Justificación del diseño
