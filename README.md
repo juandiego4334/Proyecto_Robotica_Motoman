@@ -479,8 +479,6 @@ Aun así, se considera que con mejoras en el sistema mecánico y en el control d
 Como trabajo futuro se recomienda:
 - Implementar un software que permita incorporar un eje adicional sin depender de restricciones de licencia.
 - Mejorar la precisión del sistema de posicionamiento del riel para reducir errores acumulados.
-- Diseñar una herramienta más robusta que permita suministrar pasta de soldadura y mantener una punta adecuada para el proceso.
-- Sustituir la base de la herramienta, actualmente fabricada en PLA, por un material con mayor resistencia térmica para evitar deformaciones por calor.
 - Optimizar la fijación de la PCB y del área de trabajo para minimizar desplazamientos durante la ejecución.
   
 ## 8. Diagrama de flujo de acciones del robot
