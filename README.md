@@ -23,8 +23,8 @@
 * **Pablo de Jesus Arcila Mora**
 * **Marco Alejandro Morales Pantoja**
 * **Daniel Felipe Castro Galindo**
-* **Juan ... ... ...**
-* **Alejandra ... ... ...**
+* **Juan Diego Sáenz Ardila**
+* **Alejandra Sofia Monroy Socha**
 
   
 ## 1. Bitácora del desarrollo
