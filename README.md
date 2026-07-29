@@ -90,26 +90,32 @@ Esta sesión tiene como finalidad el documentar el proceso, de manera cronológi
 ### Fase 1: Medición del área de trabajo
 En la etapa inicial se realizó la medición del área de trabajo donde se instalaría la herramienta. Esta actividad permitió definir el espacio disponible, la ubicación de la PCB, la herramienta de sujeción para la PCB y para el Cautín y las zonas de aproximación necesarias para planear la trayectoria del robot.
 
-<div style="text-align: center;">
+<p align="center">
   <img src="./IMG/Boceto%20zona%20de%20instalacion%20de%20la%20herramienta.jpeg" alt="Toma de medidas para la instalación de la herramienta" width="400">
-  <p><em>Figura 1. Toma de medidas para la instalación de la herramienta.</em></p>
-</div>
+  <br>
+  <em>Figura 1. Toma de medidas para la instalación de la herramienta.</em>
+</p>
 
-<div style="text-align: center;">
+<p align="center">
   <img src="./IMG/definicion%20pose%20de%20aproximacion.jpeg" alt="Definición pose de aproximación" width="400">
-  <p><em>Figura 2. Definición pose de aproximación.</em></p>
-</div>
+  <br>
+  <em>Figura 2. Definición pose de aproximación.</em>
+</p>
 
-<div style="text-align: center;">
+<p align="center">
   <img src="./IMG/definicion%20pose%20de%20aproximacion%202.jpeg" alt="Definición pose de soldadura" width="400">
-  <p><em>Figura 3. Definición pose de soldadura.</em></p>
-</div>
+  <br>
+  <em>Figura 3. Definición pose de soldadura.</em>
+</p>
 
-**Nota**:Durante la primera definición de las poses de aproximación y de soldadura, las configuraciones se establecieron con base en los valores reportados por el Teach Pendant, ver imagen XX. Sin embargo, al intentar replicar estas posiciones en RoboDK se evidenció que las distancias mostradas no corresponden directamente a medidas en grados o milésimas de grado, sino que requieren una conversión específica para su correcta interpretación en el entorno de simulación. Debido a esta limitación, fue necesario volver a tomar las posiciones articulares, sincronizando el manipulador físico con RoboDK para garantizar la correspondencia entre las configuraciones reales y las simuladas.
-<div style="text-align: center;">
+
+**Nota**:Durante la primera definición de las poses de aproximación y de soldadura, las configuraciones se establecieron con base en los valores reportados por el Teach Pendant, ver Figura 4. Sin embargo, al intentar replicar estas posiciones en RoboDK se evidenció que las distancias mostradas no corresponden directamente a medidas en grados o milésimas de grado, sino que requieren una conversión específica para su correcta interpretación en el entorno de simulación. Debido a esta limitación, fue necesario volver a tomar las posiciones articulares, sincronizando el manipulador físico con RoboDK para garantizar la correspondencia entre las configuraciones reales y las simuladas.
+<p align="center">
   <img src="./IMG/Posicion%20articulaciones%20Teach%20pedant.jpeg" alt="Posición articulaciones Teach pedant" width="400">
-  <p><em>Figura 3. Posición articulaciones Teach Pedant.</em></p>
-</div>
+  <br>
+  <em>Figura 4. Posición articulaciones Teach Pedant.</em>
+</p>
+
 
 ### Fase 2: Primera implementación del código
 En la primera implementación se trabajó con unos targets definidos de manera arbitraria en RoboDK, con el propósito de verificar que las rutinas generadas tuvieran un comportamiento similar al requerido para una tarea de soldadura.
@@ -130,7 +136,7 @@ pose_pcb = robot.SolveFK(PCB) # SolveFK permite realizar la cinematica directa
 ...
 #Implementación de Cinematica inversa
 pose_sold = pose_pcb * transl(x, y, z_soldadura)
-joints_sold = robot.SolveIK(pose_sold) #
+joints_sold = robot.SolveIK(pose_sold) # SolveIK permite realizar la cinematica inversa
 ```
 **Nota:** los fragmentos de cogido mostrados anteriormente corresponden a ejemplos de como implementar estas funciones en Python mediante la API de Robodk. El código final implementado se describe mas adelante. 
 
@@ -159,17 +165,18 @@ Para la Etapa 3 del proyecto se diseñó una herramienta terminal para el robot 
 
 La herramienta se dividió en dos componentes principales: una **base de fijación** y un **cuerpo tubular portacautín**, donde esta configuración modular facilita la fabricación mediante impresión 3D, el montaje del cautín y el reemplazo independiente de cualquiera de las piezas.
 
-<div style="text-align: center;">
+<p align="center">
   <img src="./IMG/BASE.png" alt="Base de fijación de la herramienta" width="400">
-  <p><em>Figura 4. Base de fijación y sistema de acople de la herramienta.</em></p>
-</div>
-
+  <br>
+  <em>Figura 5. Base de fijación y sistema de acople de la herramienta.</em>
+</p>
 La base incorpora los orificios necesarios para su sujeción al sistema de montaje del robot. En su parte frontal se diseñó un alojamiento circular con ranuras que recibe las pestañas del cuerpo portacautín.
 
-<div style="text-align: center;">
+<p align="center">
   <img src="./IMG/PUNTA.png" alt="Cuerpo tubular portacautín" width="400">
-  <p><em>Figura 5. Cuerpo tubular encargado de alojar y sujetar el cautín.</em></p>
-</div>
+  <br>
+  <em>Figura 6. Cuerpo tubular encargado de alojar y sujetar el cautín.</em>
+</p>
 
 ### Sistema de acople
 
