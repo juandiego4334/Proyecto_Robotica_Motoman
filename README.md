@@ -219,6 +219,18 @@ Para aumentar la seguridad y la vida útil del sistema se recomienda:
 
 Estas mejoras permitirían reducir la transferencia de calor por conducción y radiación hacia las piezas impresas, manteniendo la precisión del montaje y disminuyendo el riesgo de que la herramienta pierda su geometría durante la operación.
 
+### Diseño del workobject
+
+Como complemento al diseño de la herramienta terminal, se desarrolló un **workobject** para sostener la placa de baquela (PCB) durante el proceso de soldadura. Este accesorio surgió debido a la necesidad de mantener la tarjeta fija y en una posición repetible, garantizando que el robot ejecutara la trayectoria programada sobre los puntos de soldadura correctos.
+
+El soporte está conformado por una bandeja rectangular con bordes elevados que facilita el posicionamiento de la PCB. Además, incorpora dos patas roscadas con tuercas hexagonales que permiten ajustar la altura y nivelar el conjunto antes de iniciar la operación. En la parte central se incluyó un orificio pasante que puede emplearse como punto de referencia o de fijación, dependiendo de los requerimientos del montaje.
+
+#### Justificación del diseño
+
+La incorporación de este workobject fue necesaria para asegurar la estabilidad de la PCB durante todo el proceso de soldadura. Un soporte rígido y nivelado reduce las variaciones en la posición de la tarjeta, mejorando la repetibilidad de la trayectoria del robot y disminuyendo errores ocasionados por diferencias de altura o movimientos de la pieza.
+
+Al igual que la herramienta terminal, este accesorio fue fabricado mediante impresión 3D, permitiendo obtener un prototipo funcional de bajo costo y fácil fabricación. Además, el sistema de nivelación facilita su adaptación a diferentes superficies de trabajo y simplifica el proceso de calibración antes de cada rutina de soldadura.
+
 
 ## 4. Simulación desde RoboDK
 
