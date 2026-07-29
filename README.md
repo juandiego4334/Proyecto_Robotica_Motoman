@@ -229,6 +229,12 @@ En la etapa de simulación, una vez desarrollado el código de control, se proce
     <img src="https://img.youtube.com/vi/NdinlWy5ti0/hqdefault.jpg" alt="Miniatura del video de simulación" width="500"/>
   </a>
 </div>
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=NdinlWy5ti0&t=1508s">
+    Ver simulación desde RoboDK
+  </a>
+</p>
+
 
 ## 5. Descripción del código implementado en el laboratorio para la soldadura
 
@@ -424,6 +430,12 @@ El siguiente video sirve para mirar a detalle la funcionalidad de la interfaz HM
     <img src="https://img.youtube.com/vi/NdinlWy5ti0/hqdefault.jpg" alt="Miniatura del video de simulación" width="500"/>
   </a>
 </div>
+<p align="center">
+  <a href="https://youtu.be/NdinlWy5ti0?t=486">
+    Ver simulación implementación de la interfaz HMI
+  </a>
+</p>
+
 
 ## 7. Comparación manual vs automatizado
 
