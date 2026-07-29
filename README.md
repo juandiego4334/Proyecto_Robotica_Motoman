@@ -295,4 +295,16 @@ print("PCB's Completadas")
 
 ## 10. Descripción del código con interfaz gráfica
 
-## 11. Vídeos de simulación y de implementación 
+## 11. Vídeo de simulación y de implementación 
+
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=NdinlWy5ti0">
+    <img src="https://img.youtube.com/vi/NdinlWy5ti0/0.jpg" alt="Video del proyecto final: Robótica Industrial: Automatización del Proceso de Ensamblaje, Soldadura y Empaque de PCBs." width="550"/>
+  </a>
+</div>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=NdinlWy5ti0">
+    Ver video completo en YouTube
+  </a>
+</p>
