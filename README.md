@@ -468,7 +468,7 @@ En la implementación final, antes de activar el cautín, se ejecutó una aproxi
 En comparación, la soldadura manual mostró mejores resultados en términos de precisión puntual durante las primeras pruebas, principalmente porque no estaba sujeta a los errores acumulados del sistema de posicionamiento. Sin embargo, la automatización ofrece una ventaja importante a largo plazo: permite repetir el proceso bajo las mismas condiciones y con mayor uniformidad, especialmente en escenarios de producción repetitiva de múltiples PCBs.
 
 Las principales fuentes de error observadas en la etapa automatizada fueron:
-- Las tolerancias de aproximación del robot.
+- Los defases de aproximación del robot.
 - La falta de fijación absoluta del riel y de la mesa de trabajo.
 - El desgaste de la punta del cautín.
 - La dificultad para manipular la pasta de soldadura con la herramienta disponible.
