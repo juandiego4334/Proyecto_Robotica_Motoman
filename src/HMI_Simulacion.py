@@ -5,466 +5,293 @@ from robodk.robomath import *
 import threading
 import time
 
-
 class HMI_RoboDK:
     def __init__(self, ventana):
-        # Configuración principal de la ventana
         self.ventana = ventana
-        self.ventana.title("HMI Básica - Soldadura PCB con RoboDK")
+        self.ventana.title("HMI Estacion de Soldadura PCB")
         self.ventana.state("zoomed")
         self.ventana.configure(bg="#dfe7ef")
 
-        # Variables de RoboDK
         self.RDK = None
         self.robot = None
-        self.target_home = None
-        self.target_pcb = None
 
-        # Variables de proceso
+        self.home = [0, 0, 0, 0, 0, 0]
+        self.aprox = [-88.98, 56.72, 27.52, 4.1, 11.93, 4.62]
+        self.pcb = [-88.02, 62.59, 33.77, 3.8, 11.48, 3.8]
+
         self.proceso_pausado = False
         self.proceso_detenido = False
-        self.emergencia_activa = False
+        self.emergencia = False
+        self.hilo_soldadura = None
+        self.stop_event = threading.Event()
 
-        # Variables visuales
-        self.estado = tk.StringVar(value="IDLE")
+        self.estado = tk.StringVar(value="Inactivo")
         self.alarma = tk.StringVar(value="Sin fallas")
         self.receta = tk.StringVar(value="PCB_1")
         self.pitch = tk.DoubleVar(value=2.54)
-        self.tiempo_soldadura = tk.DoubleVar(value=0.4)
+        self.tiempo = tk.DoubleVar(value=0.4)
         self.puntos_ejecutados = tk.IntVar(value=0)
         self.total_puntos = tk.IntVar(value=0)
-        self.menu_control = tk.StringVar(value="Configuración inicial")
 
-        # PCB por defecto
         self.recetas = {
-            "PCB_1": [
-                {"tipo": "Resistencia", "cantidad": 4, "referencia": "1k", "pines": 2},
-                {"tipo": "Capacitor", "cantidad": 2, "referencia": "100nF", "pines": 2},
-                {"tipo": "LED", "cantidad": 1, "referencia": "Rojo", "pines": 2},
-                {"tipo": "Conector", "cantidad": 1, "referencia": "JST 2P", "pines": 2}
-            ],
-            "PCB_2": [
-                {"tipo": "Resistencia", "cantidad": 6, "referencia": "220 ohm", "pines": 2},
-                {"tipo": "Diodo", "cantidad": 2, "referencia": "1N4007", "pines": 2},
-                {"tipo": "Transistor", "cantidad": 2, "referencia": "BC547", "pines": 3},
-                {"tipo": "Bornera", "cantidad": 1, "referencia": "2 vías", "pines": 2}
-            ],
-            "PCB_3": [
-                {"tipo": "CI DIP-8", "cantidad": 1, "referencia": "NE555", "pines": 8},
-                {"tipo": "Resistencia", "cantidad": 3, "referencia": "10k", "pines": 2},
-                {"tipo": "Capacitor", "cantidad": 2, "referencia": "1uF", "pines": 2},
-                {"tipo": "Conector", "cantidad": 1, "referencia": "Header 3P", "pines": 3}
-            ],
-            "PCB_Manual": []
-        }
+    "PCB_1": {
+        "componentes": [
+            ("Resistencia", 5, "1k", 2),
+            ("Resistencia", 8, "2.2k", 2),
+            ("Resistencia", 3, "100k", 2),
+            ("Capacitor", 8, "100nF", 2),
+            ("LED", 2, "Rojo", 2),
+            ("LED", 2, "Verde", 2),
+            ("Diodo", 2, "1N4148", 2),
+            ("Conector", 2, "JST 2P", 2)
+        ],
+        "puntos": [
+            (1, 1, "R1", 1), (2, 1, "R1", 2),
+            (3, 1, "R2", 1), (4, 1, "R2", 2),
+            (5, 1, "R3", 1), (6, 1, "R3", 2),
+            (7, 1, "R4", 1), (8, 1, "R4", 2),
+            (1, 2, "R5", 1), (2, 2, "R5", 2),
+            (3, 2, "R6", 1), (4, 2, "R6", 2),
+            (5, 2, "R7", 1), (6, 2, "R7", 2),
+            (7, 2, "R8", 1), (8, 2, "R8", 2),
+            (1, 3, "R9", 1), (2, 3, "R9", 2),
+            (3, 3, "R10", 1), (4, 3, "R10", 2),
+            (5, 3, "R11", 1), (6, 3, "R11", 2),
+            (7, 3, "R12", 1), (8, 3, "R12", 2),
+            (1, 4, "R13", 1), (2, 4, "R13", 2),
+            (3, 4, "R14", 1), (4, 4, "R14", 2),
+            (5, 4, "R15", 1), (6, 4, "R15", 2),
+            (7, 4, "R16", 1), (8, 4, "R16", 2),
+            (1, 5, "C1", 1), (2, 5, "C1", 2),
+            (3, 5, "C2", 1), (4, 5, "C2", 2),
+            (5, 5, "C3", 1), (6, 5, "C3", 2),
+            (7, 5, "C4", 1), (8, 5, "C4", 2),
+            (1, 6, "C5", 1), (2, 6, "C5", 2),
+            (3, 6, "C6", 1), (4, 6, "C6", 2),
+            (5, 6, "C7", 1), (6, 6, "C7", 2),
+            (7, 6, "C8", 1), (8, 6, "C8", 2),
+            (1, 7, "LED1", 1), (2, 7, "LED1", 2),
+            (3, 7, "LED2", 1), (4, 7, "LED2", 2),
+            (5, 7, "LED3", 1), (6, 7, "LED3", 2),
+            (7, 7, "LED4", 1), (8, 7, "LED4", 2),
+            (1, 8, "D1", 1), (2, 8, "D1", 2),
+            (3, 8, "D2", 1), (4, 8, "D2", 2),
+            (5, 8, "J1", 1), (6, 8, "J1", 2),
+            (7, 8, "J2", 1), (8, 8, "J2", 2)
+        ]
+    },
 
-        # Tabla básica de pines por componente
-        self.pines_componentes = {
-            "Resistencia": 2,
-            "Capacitor": 2,
-            "Diodo": 2,
-            "LED": 2,
-            "Transistor": 3,
-            "Bornera": 2,
-            "Conector": 2,
-            "CI DIP-8": 8,
-            "CI DIP-14": 14
-        }
+    "PCB_2": {
+        "componentes": [
+            ("Resistencia", 7, "220 ohm", 2),
+            ("Resistencia", 11, "10k", 2),
+            ("Capacitor", 6, "10uF", 2),
+            ("Diodo", 4, "1N4007", 2),
+            ("Transistor", 3, "BC547", 3),
+            ("Conector", 2, "Bornera 2P", 2),
+            ("CI DIP-8", 2, "LM358", 8)
+        ],
+        "puntos": [
+            (1, 1, "R1", 1), (2, 1, "R1", 2),
+            (3, 1, "R2", 1), (4, 1, "R2", 2),
+            (5, 1, "R3", 1), (6, 1, "R3", 2),
+            (7, 1, "R4", 1), (8, 1, "R4", 2),
+            (1, 2, "R5", 1), (2, 2, "R5", 2),
+            (3, 2, "R6", 1), (4, 2, "R6", 2),
+            (5, 2, "R7", 1), (6, 2, "R7", 2),
+            (7, 2, "R8", 1), (8, 2, "R8", 2),
+            (1, 3, "R9", 1), (2, 3, "R9", 2),
+            (3, 3, "R10", 1), (4, 3, "R10", 2),
+            (5, 3, "R11", 1), (6, 3, "R11", 2),
+            (7, 3, "R12", 1), (8, 3, "R12", 2),
+            (1, 4, "R13", 1), (2, 4, "R13", 2),
+            (3, 4, "R14", 1), (4, 4, "R14", 2),
+            (5, 4, "R15", 1), (6, 4, "R15", 2),
+            (7, 4, "R16", 1), (8, 4, "R16", 2),
+            (1, 5, "R17", 1), (2, 5, "R17", 2),
+            (3, 5, "R18", 1), (4, 5, "R18", 2),
+            (5, 5, "C1", 1), (6, 5, "C1", 2),
+            (7, 5, "C2", 1), (8, 5, "C2", 2),
+            (1, 6, "C3", 1), (2, 6, "C3", 2),
+            (3, 6, "C4", 1), (4, 6, "C4", 2),
+            (5, 6, "C5", 1), (6, 6, "C5", 2),
+            (7, 6, "C6", 1), (8, 6, "C6", 2),
+            (1, 7, "D1", 1), (2, 7, "D1", 2),
+            (3, 7, "D2", 1), (4, 7, "D2", 2),
+            (5, 7, "D3", 1), (6, 7, "D3", 2),
+            (7, 7, "D4", 1), (8, 7, "D4", 2),
+            (1, 8, "Q1", 1), (2, 8, "Q1", 2), (3, 8, "Q1", 3),
+            (4, 8, "Q2", 1), (5, 8, "Q2", 2), (6, 8, "Q2", 3),
+            (1, 9, "Q3", 1), (2, 9, "Q3", 2), (3, 9, "Q3", 3),
+            (4, 9, "J1", 1), (5, 9, "J1", 2),
+            (6, 9, "J2", 1), (7, 9, "J2", 2),
+            (1, 10, "U1", 1), (2, 10, "U1", 2), (3, 10, "U1", 3), (4, 10, "U1", 4),
+            (5, 10, "U1", 5), (6, 10, "U1", 6), (7, 10, "U1", 7), (8, 10, "U1", 8),
+            (1, 11, "U2", 1), (2, 11, "U2", 2), (3, 11, "U2", 3), (4, 11, "U2", 4),
+            (5, 11, "U2", 5), (6, 11, "U2", 6), (7, 11, "U2", 7), (8, 11, "U2", 8)
+        ]
+    },
 
-        # Crear interfaz
+    "PCB_Nueva": {
+        "componentes": [],
+        "puntos": []
+    }
+}
+
         self.crear_interfaz()
-
-        # Actualizar datos iniciales
         self.actualizar_receta()
 
     def crear_interfaz(self):
-        titulo = tk.Label(
-            self.ventana,
-            text="HMI - Estación 3 de Soldadura",
-            font=("123Marker", 18, "bold"),
-            bg="#dfe7ef",
-            fg="#1f3b5b"
-        )
-        titulo.pack(pady=10)
+        tk.Label(self.ventana, text="HMI - Estación de Soldadura",
+                 font=("Arial", 18, "bold"), bg="#dfe7ef", fg="#1f3b5b").pack(pady=10)
 
-        # Marco principal
-        marco_principal = tk.Frame(self.ventana, bg="#dfe7ef")
-        marco_principal.pack(fill="both", expand=True, padx=10, pady=10)
+        marco = tk.Frame(self.ventana, bg="#dfe7ef")
+        marco.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Panel izquierdo
-        self.panel_izquierdo = tk.LabelFrame(
-            marco_principal,
-            text="PCB's y Resumen",
-            font=("123Marker", 11, "bold"),
-            bg="white",
-            padx=10,
-            pady=10
-        )
-        self.panel_izquierdo.pack(side="left", fill="y", padx=8)
+        self.izq = tk.LabelFrame(marco, text="Recetas", bg="white", padx=10, pady=10)
+        self.izq.pack(side="left", fill="y", padx=8)
 
-        # Panel central
-        self.panel_central = tk.LabelFrame(
-            marco_principal,
-            text="Control",
-            font=("123Marker", 11, "bold"),
-            bg="white",
-            padx=10,
-            pady=10
-        )
-        self.panel_central.pack(side="left", fill="both", expand=True, padx=8)
+        self.centro = tk.LabelFrame(marco, text="Control", bg="white", padx=10, pady=10)
+        self.centro.pack(side="left", fill="both", expand=True, padx=8)
 
-        # Panel derecho
-        self.panel_derecho = tk.LabelFrame(
-            marco_principal,
-            text="Estado",
-            font=("123Marker", 11, "bold"),
-            bg="white",
-            padx=10,
-            pady=10
-        )
-        self.panel_derecho.pack(side="right", fill="y", padx=8)
+        self.der = tk.LabelFrame(marco, text="Estado", bg="white", padx=10, pady=10)
+        self.der.pack(side="right", fill="y", padx=8)
 
-        # Construcción de secciones
-        self.construir_panel_recetas()
-        self.construir_panel_control()
-        self.construir_panel_estado()
-        self.construir_log()
+        self.panel_recetas()
+        self.panel_control()
+        self.panel_estado()
+        self.panel_log()
 
-    def construir_panel_recetas(self):
-        # Selector de receta
-        tk.Label(
-            self.panel_izquierdo,
-            text="Selecciona una configuración de PCB",
-            bg="white",
-            font="123Marker"
-        ).pack(anchor="w")
+    def panel_recetas(self):
+        tk.Label(self.izq, text="Selecciona una PCB", bg="white").pack(anchor="w")
+        combo = ttk.Combobox(self.izq, textvariable=self.receta,
+                             values=list(self.recetas.keys()), state="readonly")
+        combo.pack(fill="x", pady=5)
+        combo.bind("<<ComboboxSelected>>", self.actualizar_receta)
 
-        combo_receta = ttk.Combobox(
-            self.panel_izquierdo,
-            textvariable=self.receta,
-            values=list(self.recetas.keys()),
-            state="readonly"
-        )
-        combo_receta.pack(fill="x", pady=5)
-        combo_receta.bind("<<ComboboxSelected>>", self.actualizar_receta)
+        self.btn_punto = tk.Button(self.izq, text="Agregar punto manual",
+                                   bg="#d9fbd9", command=self.agregar_Componentes)
 
-        # Botón para agregar componente manual
-        self.boton_manual = tk.Button(
-            self.panel_izquierdo,
-            text="Agregar componente a PCB manual",
-            bg="#d9e8fb",
-            font="123Marker",
-            command=self.abrir_ventana_componente
-        )
+        tk.Label(self.izq, text="Componentes:", bg="white").pack(anchor="w", pady=(10, 0))
+        self.tabla_comp = ttk.Treeview(self.izq, columns=("tipo", "cant", "ref", "pin"),
+                                       show="headings", height=5)
+        for c, t, w in [("tipo", "Tipo", 120), ("cant", "Cant", 50),
+                        ("ref", "Ref", 90), ("pin", "Pines", 50)]:
+            self.tabla_comp.heading(c, text=t)
+            self.tabla_comp.column(c, width=w, anchor="center")
+        self.tabla_comp.pack(fill="x", pady=5)
 
-        # Tabla de componentes de la PCB
-        tk.Label(
-            self.panel_izquierdo,
-            text="Componentes de la PCB:",
-            bg="white",
-            font="123Marker"
-        ).pack(anchor="w", pady=(10, 0))
+        tk.Label(self.izq, text="Puntos:", bg="white").pack(anchor="w")
+        self.tabla_puntos = ttk.Treeview(self.izq, columns=("x", "y", "ref", "pin"),
+                                         show="headings", height=6)
+        for c, t, w in [("x", "X", 50), ("y", "Y", 50), ("ref", "Ref", 80), ("pin", "Pin", 50)]:
+            self.tabla_puntos.heading(c, text=t)
+            self.tabla_puntos.column(c, width=w, anchor="center")
+        self.tabla_puntos.pack(fill="x", pady=5)
 
-        estilo_tabla = ttk.Style()
-        estilo_tabla.theme_use("clam")
-        estilo_tabla.configure(
-            "Treeview",
-            background="white",
-            foreground="black",
-            rowheight=28,
-            fieldbackground="white",
-            font=("123Marker", 10)
-        )
-        estilo_tabla.configure(
-            "Treeview.Heading",
-            background="#b8d8f8",
-            foreground="#1f3b5b",
-            font=("123Marker", 10, "bold")
-        )
+        tk.Label(self.izq, text="Pitch [mm]:", bg="white").pack(anchor="w")
+        tk.Entry(self.izq, textvariable=self.pitch).pack(fill="x", pady=5)
 
-        marco_tabla = tk.Frame(self.panel_izquierdo, bg="white")
-        marco_tabla.pack(fill="both", pady=5)
+        tk.Label(self.izq, text="Tiempo de soldadura [s]:", bg="white").pack(anchor="w")
+        tk.Entry(self.izq, textvariable=self.tiempo).pack(fill="x", pady=5)
 
-        columnas = ("componente", "cantidad", "referencia", "pines")
-        self.tabla_componentes = ttk.Treeview(
-            marco_tabla,
-            columns=columnas,
-            show="headings",
-            height=4
-        )
+        tk.Label(self.izq, text="Total puntos:", bg="white").pack(anchor="w")
+        tk.Entry(self.izq, textvariable=self.total_puntos, state="readonly").pack(fill="x", pady=5)
 
-        self.tabla_componentes.heading("componente", text="Componente")
-        self.tabla_componentes.heading("cantidad", text="Cantidad")
-        self.tabla_componentes.heading("referencia", text="Referencia")
-        self.tabla_componentes.heading("pines", text="Pines")
+    def panel_control(self):
+        botones = [
+            ("Conectar RoboDK", self.conectar_robodk, "#b8d8f8"),
+            ("Cargar robot", self.cargar_robot, "#b8d8f8"),
+            ("Ir a Home", self.ir_home, "#c9f7c1"),
+            ("Ir a Aproximación", self.ir_aprox, "#c9f7c1"),
+            ("Validar puntos", self.validar_puntos, "#d6ecff"),
+            ("Iniciar soldadura", self.iniciar_hilo, "#ffe6a7"),
+            ("Pausar / Reanudar", self.pausar, "#fff2b2"),
+            ("Detener", self.detener, "#f8c1c1"),
+            ("Emergencia", self.parada_emergencia, "#ff6b6b"),
+            ("Reset", self.reset, "#f3d1ff")
+        ]
+        for texto, comando, color in botones:
+            tk.Button(self.centro, text=texto, bg=color, command=comando).pack(fill="x", pady=5)
 
-        self.tabla_componentes.column("componente", width=130, anchor="center")
-        self.tabla_componentes.column("cantidad", width=70, anchor="center")
-        self.tabla_componentes.column("referencia", width=110, anchor="center")
-        self.tabla_componentes.column("pines", width=60, anchor="center")
+    def panel_estado(self):
+        tk.Label(self.der, text="Estado:", bg="white").pack(anchor="w")
+        tk.Label(self.der, textvariable=self.estado, bg="white", fg="blue").pack(anchor="w", pady=5)
 
-        scroll_tabla = ttk.Scrollbar(
-            marco_tabla,
-            orient="vertical",
-            command=self.tabla_componentes.yview
-        )
-        self.tabla_componentes.configure(yscrollcommand=scroll_tabla.set)
+        tk.Label(self.der, text="Puntos ejecutados:", bg="white").pack(anchor="w")
+        tk.Label(self.der, textvariable=self.puntos_ejecutados, bg="white", fg="green").pack(anchor="w", pady=5)
 
-        self.tabla_componentes.pack(side="left", fill="both", expand=True)
-        scroll_tabla.pack(side="right", fill="y")
+        tk.Label(self.der, text="Alarma:", bg="white").pack(anchor="w")
+        tk.Label(self.der, textvariable=self.alarma, bg="white", fg="red",
+                 wraplength=220, justify="left").pack(anchor="w", pady=5)
 
-        # Resumen general
-        tk.Label(
-            self.panel_izquierdo,
-            text="Distancia entre puntos [mm]:",
-            bg="white",
-            font="123Marker"
-        ).pack(anchor="w")
-        tk.Entry(self.panel_izquierdo, textvariable=self.pitch).pack(fill="x", pady=5)
-
-        tk.Label(
-            self.panel_izquierdo,
-            text="Tiempo de soldadura [s]:",
-            bg="white",
-            font="123Marker"
-        ).pack(anchor="w")
-        tk.Entry(self.panel_izquierdo, textvariable=self.tiempo_soldadura).pack(fill="x", pady=5)
-
-        tk.Label(
-            self.panel_izquierdo,
-            text="Puntos de soldadura totales:",
-            bg="white",
-            font="123Marker"
-        ).pack(anchor="w")
-        tk.Entry(self.panel_izquierdo, textvariable=self.total_puntos, state="readonly").pack(fill="x", pady=5)
-
-    def construir_panel_control(self):
-        # Menú desplegable para cambiar entre paneles
-        tk.Label(
-            self.panel_central,
-            text="Selecciona el menú de control:",
-            bg="white",
-            font="123Marker"
-        ).pack(anchor="w")
-
-        combo_control = ttk.Combobox(
-            self.panel_central,
-            textvariable=self.menu_control,
-            values=["Configuración inicial", "Configuraciones de operación"],
-            state="readonly"
-        )
-        combo_control.pack(fill="x", pady=5)
-        combo_control.bind("<<ComboboxSelected>>", self.cambiar_panel_control)
-
-        # Marco dinámico
-        self.marco_dinamico = tk.Frame(self.panel_central, bg="white")
-        self.marco_dinamico.pack(fill="both", expand=True, pady=10)
-
-        # Mostrar panel inicial
-        self.mostrar_configuracion_inicial()
-
-    def actualizar_visibilidad_boton_manual(self):
-        if self.receta.get() == "PCB_Manual":
-            if not self.boton_manual.winfo_ismapped():
-                self.boton_manual.pack(fill="x", pady=5)
-        else:
-            self.boton_manual.pack_forget()
-
-    def limpiar_marco_dinamico(self):
-        # Limpiar widgets del panel dinámico
-        for widget in self.marco_dinamico.winfo_children():
-            widget.destroy()
-
-    def cambiar_panel_control(self, event=None):
-        # Cambiar entre panel inicial y panel de operación
-        if self.menu_control.get() == "Configuración inicial":
-            self.mostrar_configuracion_inicial()
-        else:
-            self.mostrar_configuracion_operacion()
-
-    def mostrar_configuracion_inicial(self):
-        # Mostrar botones de configuración inicial
-        self.limpiar_marco_dinamico()
-
-        tk.Button(self.marco_dinamico, text="Conexión con RoboDK", font="123Marker", bg="#b8d8f8", command=self.conectar_robodk).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Cargar Robot", font="123Marker", bg="#b8d8f8", command=self.cargar_robot).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Ir a Home", font="123Marker", bg="#c9f7c1", command=self.ir_home).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Ir a Target PCB", font="123Marker", bg="#c9f7c1", command=self.ir_pcb).pack(fill="x", pady=5)
-
-    def mostrar_configuracion_operacion(self):
-        # Mostrar botones de operación
-        self.limpiar_marco_dinamico()
-
-        tk.Button(self.marco_dinamico, text="Iniciar soldadura", font="123Marker", bg="#ffe6a7", command=self.iniciar_hilo_soldadura).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Pausar / Reanudar", font="123Marker", bg="#fff2b2", command=self.pausar_proceso).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Reset", font="123Marker", bg="#f3d1ff", command=self.reset_hmi).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Detener proceso", font="123Marker", bg="#f8c1c1", command=self.detener_proceso).pack(fill="x", pady=5)
-        tk.Button(self.marco_dinamico, text="Parada de emergencia", font="123Marker", bg="#ff6b6b", fg="white", command=self.parada_emergencia).pack(fill="x", pady=5)
-
-    def construir_panel_estado(self):
-        # Mostrar estado actual
-        tk.Label(self.panel_derecho, text="Estado actual:", bg="white", font=("123Marker", 10, "bold")).pack(anchor="w")
-        tk.Label(self.panel_derecho, textvariable=self.estado, bg="white", fg="blue", font=("123Marker", 12)).pack(anchor="w", pady=5)
-
-        # Mostrar puntos ejecutados
-        tk.Label(self.panel_derecho, text="Puntos ejecutados:", bg="white", font=("123Marker", 10, "bold")).pack(anchor="w")
-        tk.Label(self.panel_derecho, textvariable=self.puntos_ejecutados, bg="white", fg="green", font=("123Marker", 12)).pack(anchor="w", pady=5)
-
-        # Mostrar alarma
-        tk.Label(self.panel_derecho, text="Alarma:", bg="white", font=("123Marker", 10, "bold")).pack(anchor="w")
-        tk.Label(
-            self.panel_derecho,
-            textvariable=self.alarma,
-            bg="white",
-            fg="red",
-            wraplength=220,
-            justify="left"
-        ).pack(anchor="w", pady=5)
-
-    def construir_log(self):
-        # Crear área de log
-        marco_log = tk.LabelFrame(
-            self.ventana,
-            text="Log del proceso",
-            font=("123Marker", 11, "bold"),
-            bg="white",
-            padx=10,
-            pady=10
-        )
+    def panel_log(self):
+        marco_log = tk.LabelFrame(self.ventana, text="Log", bg="white", padx=10, pady=10)
         marco_log.pack(fill="both", expand=True, padx=10, pady=10)
+        self.log = tk.Text(marco_log, height=10)
+        self.log.pack(fill="both", expand=True)
 
-        self.texto_log = tk.Text(marco_log, height=10)
-        self.texto_log.pack(fill="both", expand=True)
-
-    def escribir_log(self, mensaje):
-        # Escribir mensajes en el log
-        self.texto_log.insert("end", mensaje + "\n")
-        self.texto_log.see("end")
+    def escribir_log(self, texto):
+        self.log.insert("end", texto + "\n")
+        self.log.see("end")
 
     def actualizar_receta(self, event=None):
-        receta_actual = self.receta.get()
-        componentes = self.recetas[receta_actual]
+        receta = self.recetas[self.receta.get()]
 
-        self.actualizar_visibilidad_boton_manual()
+        for i in self.tabla_comp.get_children():
+            self.tabla_comp.delete(i)
+        for i in self.tabla_puntos.get_children():
+            self.tabla_puntos.delete(i)
 
-        for fila in self.tabla_componentes.get_children():
-            self.tabla_componentes.delete(fila)
+        for comp in receta["componentes"]:
+            self.tabla_comp.insert("", "end", values=comp)
 
-        if not componentes:
-            self.tabla_componentes.insert("", "end", values=("PCB manual vacía", "-", "-", "-"))
+        for x, y, ref, pin in receta["puntos"]:
+            self.tabla_puntos.insert("", "end", values=(x, y, ref, pin))
+
+        self.total_puntos.set(len(receta["puntos"]))
+
+        if self.receta.get() == "PCB_Nueva":
+            self.btn_punto.pack(fill="x", pady=5)
         else:
-            for i, comp in enumerate(componentes):
-                tag = "par" if i % 2 == 0 else "impar"
-                self.tabla_componentes.insert(
-                    "",
-                    "end",
-                    values=(
-                        comp["tipo"],
-                        comp["cantidad"],
-                        comp["referencia"],
-                        comp["pines"]
-                    ),
-                    tags=(tag,)
-                )
+            self.btn_punto.pack_forget()
 
-        self.tabla_componentes.tag_configure("par", background="#f4f8fc")
-        self.tabla_componentes.tag_configure("impar", background="white")
+        self.escribir_log(f"Receta seleccionada: {self.receta.get()}")
 
-        self.calcular_puntos_totales()
-        self.escribir_log(f"Receta seleccionada: {receta_actual}")
-
-    def calcular_puntos_totales(self):
-        # Calcular puntos de soldadura según los componentes
-        receta_actual = self.receta.get()
-        total = 0
-
-        for comp in self.recetas[receta_actual]:
-            total += comp["cantidad"] * comp["pines"]
-
-        self.total_puntos.set(total)
-
-    def abrir_ventana_componente(self):
-        # Abrir ventana para agregar componentes a la receta manual
-        if self.receta.get() != "PCB_Manual":
-            messagebox.showinfo("Información", "Selecciona primero la opcion de PCB'Manual' para agregar componentes.")
+    def agregar_Componentes(self):
+        if self.receta.get() != "PCB_Nueva":
             return
 
-        ventana_comp = tk.Toplevel(self.ventana)
-        ventana_comp.title("Agregar componente")
-        ventana_comp.geometry("400x320")
-        ventana_comp.configure(bg="white")
+        ventana = tk.Toplevel(self.ventana)
+        ventana.title("Agregar Componente")
+        ventana.geometry("300x250")
 
-        tipo_var = tk.StringVar(value="Resistencia")
-        cantidad_var = tk.IntVar(value=1)
-        referencia_var = tk.StringVar(value="")
+        x_var = tk.DoubleVar(value=0)
+        y_var = tk.DoubleVar(value=0)
+        ref_var = tk.StringVar(value="P1")
+        pin_var = tk.IntVar(value=1)
 
-        tk.Label(ventana_comp, text="Tipo de componente:", font="123Marker", bg="white").pack(anchor="w", padx=10, pady=5)
-        ttk.Combobox(
-            ventana_comp,
-            textvariable=tipo_var,
-            values=list(self.pines_componentes.keys()),
-            state="readonly"
-        ).pack(fill="x", padx=10, pady=5)
+        for texto, var in [("X:", x_var), ("Y:", y_var), ("Referencia:", ref_var), ("Pin:", pin_var)]:
+            tk.Label(ventana, text=texto).pack(anchor="w", padx=10, pady=5)
+            tk.Entry(ventana, textvariable=var).pack(fill="x", padx=10)
 
-        tk.Label(ventana_comp, text="Cantidad:", font="123Marker", bg="white").pack(anchor="w", padx=10, pady=5)
-        tk.Entry(ventana_comp, textvariable=cantidad_var).pack(fill="x", padx=10, pady=5)
-
-        tk.Label(ventana_comp, text="Referencia:", font="123Marker", bg="white").pack(anchor="w", padx=10, pady=5)
-        tk.Entry(ventana_comp, textvariable=referencia_var).pack(fill="x", padx=10, pady=5)
-
-        def guardar_componente():
-            tipo = tipo_var.get()
-            cantidad = cantidad_var.get()
-            referencia = referencia_var.get().strip()
-            pines = self.pines_componentes[tipo]
-
-            if cantidad <= 0:
-                messagebox.showerror("Error", "La cantidad debe ser mayor que cero.")
-                return
-
-            if referencia == "":
-                referencia = "Sin referencia"
-
-            nuevo = {
-                "tipo": tipo,
-                "cantidad": cantidad,
-                "referencia": referencia,
-                "pines": pines
-            }
-
-            self.recetas["PCB_Manual"].append(nuevo)
+        def guardar():
+            self.recetas["PCB_Nueva"]["puntos"].append(
+                (x_var.get(), y_var.get(), ref_var.get(), pin_var.get())
+            )
             self.actualizar_receta()
-            self.escribir_log(f"Componente agregado a la PCB manual: {tipo}, cantidad {cantidad}")
-            ventana_comp.destroy()
+            self.escribir_log(f"Punto agregado: X={x_var.get()}, Y={y_var.get()}")
+            ventana.destroy()
 
-        tk.Button(
-            ventana_comp,
-            text="Guardar componente",
-            bg="#c9f7c1",
-            font="123Marker",
-            command=guardar_componente
-        ).pack(fill="x", padx=10, pady=15)
+        tk.Button(ventana, text="Guardar", bg="#c9f7c1", command=guardar).pack(fill="x", padx=10, pady=15)
 
-    def generar_puntos(self):
-        # Generar puntos automáticamente según total calculado
+    def obtener_puntos_mm(self):
         puntos = []
-        pitch = self.pitch.get()
-        cantidad = self.total_puntos.get()
-
-        columnas = 10
-        filas = (cantidad + columnas - 1) // columnas
-
-        for fila in range(filas):
-            for columna in range(columnas):
-                if len(puntos) < cantidad:
-                    x = columna * pitch
-                    y = fila * pitch
-                    puntos.append((x, y))
-
+        for x, y, ref, pin in self.recetas[self.receta.get()]["puntos"]:
+            puntos.append((x * self.pitch.get(), y * self.pitch.get(), ref, pin))
         return puntos
 
     def conectar_robodk(self):
-        # Conectar con RoboDK
         try:
             self.RDK = Robolink()
             self.estado.set("READY")
@@ -473,149 +300,179 @@ class HMI_RoboDK:
         except Exception as e:
             self.estado.set("FAULT")
             self.alarma.set(str(e))
-            self.escribir_log(f"Error al conectar con RoboDK: {e}")
 
     def cargar_robot(self):
-        # Cargar robot y targets
         try:
             self.robot = self.RDK.ItemUserPick("Selecciona un robot", ITEM_TYPE_ROBOT)
-            self.target_home = self.RDK.Item("Target_Casa", ITEM_TYPE_TARGET)
-            self.target_pcb = self.RDK.Item("Target_PCB", ITEM_TYPE_TARGET)
-
             if not self.robot.Valid():
-                raise Exception("No se seleccionó un robot válido.")
-            if not self.target_home.Valid():
-                raise Exception('No existe el target "Target_Casa".')
-            if not self.target_pcb.Valid():
-                raise Exception('No existe el target "Target_PCB".')
-
-            self.robot.setPoseTool(self.robot.PoseTool())
-            self.robot.setSpeed(20)
-            self.robot.setRounding(1)
-
+                raise Exception("Robot no válido.")
+            
+            self.robot.setSpeed(50)
+            self.robot.setRounding(5)
             self.estado.set("READY")
-            self.alarma.set("Sin fallas")
-            self.escribir_log("Robot y targets cargados correctamente.")
+            self.escribir_log("Robot cargado correctamente.")
+
         except Exception as e:
             self.estado.set("FAULT")
             self.alarma.set(str(e))
-            self.escribir_log(f"Error al cargar robot: {e}")
 
     def ir_home(self):
-        # Mover robot a home
         try:
-            self.robot.MoveJ(self.target_home)
-            self.estado.set("READY")
-            self.escribir_log("Robot movido a Home.")
+            self.robot.MoveJ(self.home)
+            self.escribir_log("Robot en Home.")
         except Exception as e:
             self.estado.set("FAULT")
             self.alarma.set(str(e))
-            self.escribir_log(f"Error al mover a Home: {e}")
 
-    def ir_pcb(self):
-        # Mover robot a target PCB
+    def ir_aprox(self):
         try:
-            self.robot.MoveJ(self.target_pcb)
-            self.estado.set("READY")
-            self.escribir_log("Robot movido al target PCB.")
+            self.robot.MoveJ(self.aprox)
+            self.escribir_log("Robot en aproximación.")
         except Exception as e:
             self.estado.set("FAULT")
             self.alarma.set(str(e))
-            self.escribir_log(f"Error al mover a PCB: {e}")
+
+    def validar_puntos(self):
+        try:
+            if not self.robot:
+                raise Exception("Primero carga el robot.")
+            pose_pcb = self.robot.SolveFK(self.pcb)
+
+            for i, (x, y, ref, pin) in enumerate(self.obtener_puntos_mm(), start=1):
+                pose1 = pose_pcb * transl(x, y, -10)
+                pose2 = pose_pcb * transl(x, y, 1)
+                j1 = self.robot.SolveIK(pose1)
+                j2 = self.robot.SolveIK(pose2)
+                if j1 is None or j2 is None:
+                    raise Exception(f"Error en punto {i}: {ref}")
+
+            self.estado.set("READY")
+            self.alarma.set("Puntos válidos")
+            self.escribir_log("Todos los puntos fueron validados.")
+        except Exception as e:
+            self.estado.set("FAULT")
+            self.alarma.set(str(e))
+            self.escribir_log(f"Validación fallida: {e}")
 
     def rutina_soldadura(self):
-        # Ejecutar rutina de soldadura
         try:
+            puntos = self.obtener_puntos_mm()
+            if not puntos:
+                raise Exception("No hay puntos para soldar.")
+            if not self.robot:
+                raise Exception("Primero debes cargar el robot.")
+
+            self.puntos_ejecutados.set(0)
             self.estado.set("RUN")
             self.alarma.set("Sin fallas")
-            self.proceso_pausado = False
-            self.proceso_detenido = False
-            self.emergencia_activa = False
-            self.puntos_ejecutados.set(0)
 
-            pose_pcb = self.target_pcb.Pose()
-            puntos = self.generar_puntos()
-            z_aproximacion = 5
-            z_soldadura = 0
+            pose_pcb = self.robot.SolveFK(self.pcb)
+            self.robot.MoveJ(self.aprox)
+            self.robot.setSpeed(10)
+            self.escribir_log("Inicio de soldadura.")
 
-            self.robot.MoveJ(self.target_home)
-            self.robot.MoveJ(self.target_pcb)
-            self.escribir_log("Inicio de rutina de soldadura.")
-
-            for i, (x, y) in enumerate(puntos, start=1):
-                if self.emergencia_activa:
-                    raise Exception("Parada de emergencia activada.")
-
-                if self.proceso_detenido:
+            for i, (x, y, ref, pin) in enumerate(puntos, start=1):
+                if self.stop_event.is_set() or self.proceso_detenido:
                     self.estado.set("STOP")
-                    self.escribir_log("Proceso detenido por operador.")
+                    self.escribir_log("Rutina detenida por operador/reset.")
                     return
+
+                if self.emergencia:
+                    raise Exception("Parada de emergencia activada.")
 
                 while self.proceso_pausado:
                     self.estado.set("PAUSE")
+                    if self.stop_event.is_set() or self.proceso_detenido:
+                        self.estado.set("STOP")
+                        self.escribir_log("Rutina cancelada durante pausa.")
+                        return
                     time.sleep(0.2)
 
                 self.estado.set("RUN")
-                self.robot.MoveJ(pose_pcb * transl(x, y, z_aproximacion))
-                self.robot.MoveJ(pose_pcb * transl(x, y, z_soldadura))
-                time.sleep(self.tiempo_soldadura.get())
-                self.robot.MoveJ(pose_pcb * transl(x, y, z_aproximacion))
+
+                pose_aprox = pose_pcb * transl(x, y, -10)
+                pose_sold = pose_pcb * transl(x, y, 1)
+
+                joints_aprox = self.robot.SolveIK(pose_aprox)
+                joints_sold = self.robot.SolveIK(pose_sold)
+
+                self.robot.MoveJ(joints_aprox)
+                self.robot.MoveJ(joints_sold)
+                time.sleep(self.tiempo.get())
+                self.robot.MoveJ(joints_aprox)
 
                 self.puntos_ejecutados.set(i)
-                self.escribir_log(f"Punto {i} soldado en X={x:.2f} mm, Y={y:.2f} mm")
+                self.escribir_log(f"Punto {i}: {ref} pin {pin} | X={x:.2f}, Y={y:.2f}")
 
-            self.robot.MoveJ(self.target_pcb)
-            self.robot.MoveJ(self.target_home)
+            self.robot.MoveJ(self.aprox)
+            self.robot.MoveJ(self.home)
             self.estado.set("DONE")
-            self.escribir_log("Rutina completada. Robot regresó a Home.")
+            self.escribir_log("Proceso terminado correctamente.")
 
         except Exception as e:
             self.estado.set("FAULT")
             self.alarma.set(str(e))
-            self.escribir_log(f"Error en la rutina: {e}")
+            self.escribir_log(f"Error en rutina: {e}") 
 
-    def iniciar_hilo_soldadura(self):
-        # Iniciar rutina en un hilo
-        hilo = threading.Thread(target=self.rutina_soldadura, daemon=True)
-        hilo.start()
+    def iniciar_hilo(self):
+            if self.hilo_soldadura and self.hilo_soldadura.is_alive():
+                self.escribir_log("La rutina ya está en ejecución.")
+                return
 
-    def pausar_proceso(self):
-        # Pausar o reanudar el proceso
+            self.stop_event.clear()
+            self.proceso_detenido = False
+            self.proceso_pausado = False
+            self.emergencia = False
+
+            self.hilo_soldadura = threading.Thread(
+                target=self.rutina_soldadura,
+                daemon=True
+            )
+            self.hilo_soldadura.start()
+            self.escribir_log("Hilo de soldadura iniciado.")
+
+    def pausar(self):
         self.proceso_pausado = not self.proceso_pausado
-        if self.proceso_pausado:
-            self.estado.set("PAUSE")
-            self.escribir_log("Proceso pausado.")
-        else:
-            self.estado.set("RUN")
-            self.escribir_log("Proceso reanudado.")
+        self.escribir_log("Proceso pausado." if self.proceso_pausado else "Proceso reanudado.")
 
-    def detener_proceso(self):
-        # Detener proceso sin desenergizar
+    def detener(self):
         self.proceso_detenido = True
+        self.stop_event.set()
         self.estado.set("STOP")
         self.alarma.set("Proceso detenido por operador.")
-        self.escribir_log("Detener proceso activado.")
-
+        self.escribir_log("Proceso detenido.")
+        try:
+            if self.robot:
+                self.robot.Stop()
+        except:
+            pass
+        
     def parada_emergencia(self):
-        # Activar parada de emergencia
-        self.emergencia_activa = True
+        self.emergencia = True
         self.proceso_detenido = True
+        self.stop_event.set()
         self.estado.set("EMERGENCY")
         self.alarma.set("Parada de emergencia activada.")
-        self.escribir_log("Parada de emergencia activada.")
+        self.escribir_log("Emergencia activada.")
+        try:
+            if self.robot:
+                self.robot.Stop()
+        except:
+            pass
+        
+    def reset(self):
+        self.proceso_pausado = False
+        self.proceso_detenido = True
+        self.emergencia = False
+        self.stop_event.set()
 
         try:
             if self.robot:
                 self.robot.Stop()
-        except Exception:
+        except:
             pass
 
-    def reset_hmi(self):
-        # Reiniciar HMI
-        self.proceso_pausado = False
-        self.proceso_detenido = False
-        self.emergencia_activa = False
-        self.estado.set("IDLE")
+        self.estado.set("Inactivo")
         self.alarma.set("Sin fallas")
         self.puntos_ejecutados.set(0)
         self.escribir_log("Sistema reiniciado.")
@@ -623,5 +480,5 @@ class HMI_RoboDK:
 
 if __name__ == "__main__":
     ventana = tk.Tk()
-    app = HMI_RoboDK(ventana)
+    pantalla = HMI_RoboDK(ventana)
     ventana.mainloop()
