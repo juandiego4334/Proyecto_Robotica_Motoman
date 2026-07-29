@@ -225,6 +225,12 @@ Como complemento al diseño de la herramienta terminal, se desarrolló un **work
 
 El soporte está conformado por una bandeja rectangular con bordes elevados que facilita el posicionamiento de la PCB. Además, incorpora dos patas roscadas con tuercas hexagonales que permiten ajustar la altura y nivelar el conjunto antes de iniciar la operación. En la parte central se incluyó un orificio pasante que puede emplearse como punto de referencia o de fijación, dependiendo de los requerimientos del montaje.
 
+<p align="center">
+  <img src="IMG/soporte.png" width="500">
+  <br>
+  <em>Figura 6. Cuerpo tubular encargado de alojar y sujetar el cautín.</em>
+</p>
+
 #### Justificación del diseño
 
 La incorporación de este workobject fue necesaria para asegurar la estabilidad de la PCB durante todo el proceso de soldadura. Un soporte rígido y nivelado reduce las variaciones en la posición de la tarjeta, mejorando la repetibilidad de la trayectoria del robot y disminuyendo errores ocasionados por diferencias de altura o movimientos de la pieza.
