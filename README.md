@@ -339,7 +339,8 @@ La interfaz HMI fue desarrollada en *Python* utilizando las librerías *tkinter*
   <em>Figura 7. Interfaz HMI de la estación de soldadura.</em>
 </p>
 Entre las funciones implementadas en el codigo de la interfaz HMI podemos recalcar:
-#### Conexión con RoboDK
+
+### 6.1. Conexión con RoboDK
 ```python
 def conectar_robodk(self):
     try:
@@ -354,7 +355,7 @@ def conectar_robodk(self):
 
 Esta función establece la comunicación entre la interfaz HMI y RoboDK.
 
-#### Validación de puntos
+### 6.2. Validación de puntos
 ```python
 def validar_puntos(self):
     try:
@@ -381,7 +382,7 @@ def validar_puntos(self):
 
 Esta función valida la alcanzabilidad de los puntos de soldadura mediante cinemática directa e inversa.
 
-#### Ejecución en hilo independiente
+### 6.3. Ejecución en hilo independiente
 ```python
 def iniciar_hilo(self):
     if self.hilo_soldadura and self.hilo_soldadura.is_alive():
@@ -403,7 +404,7 @@ def iniciar_hilo(self):
 
 Esta función permite ejecutar la rutina sin bloquear la interfaz gráfica.
 
-#### Parada de emergencia
+### 6.4. Parada de emergencia
 ```python
 def parada_emergencia(self):
     self.emergencia = True
