@@ -23,8 +23,8 @@
 * **Pablo de Jesus Arcila Mora**
 * **Marco Alejandro Morales Pantoja**
 * **Daniel Felipe Castro Galindo**
-* **Juan ... ... ...**
-* **Alejandra ... ... ...**
+* **Juan Diego Sáenz Ardila**
+* **Alejandra Sofia Monroy Socha**
 
 ## Introducción 
 Este proyecto consistió en el diseño, implementación y validación de una rutina de soldadura sobre PCB utilizando un robot industrial ubicado en la Sala CAM, el Yaskawa Motoman MH6 alias “El Chambeador”; para este proyecto, la metodología empleada combinó simulación en RoboDK con ajustes empíricos de las posiciones articulares del robot, incorporando estrategias de cinemática directa e inversa para garantizar la precisión en los puntos de soldadura.
