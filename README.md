@@ -222,11 +222,21 @@ Estas mejoras permitirían reducir la transferencia de calor por conducción y r
 
 ## 4. Simulación desde RoboDK
 
+En la etapa de simulación, una vez desarrollado el código de control, se procedió a su verificación en el entorno de RoboDK. En esta fase se ejecutaron múltiples pruebas para observar el comportamiento del manipulador y ajustar la trayectoria hasta obtener un movimiento coherente con la tarea de soldadura propuesta. La simulación completa puede evidenciarse en el siguiente video, donde se aprecia la secuencia de aproximación, posicionamiento sobre la PCB y ejecución de los puntos de soldadura.
+
+
+
 ## 5.Código fuente utilizado
-Debido a que RoboDK no permite una comunicación en tiempo real de el programa y el robot, la interfaz gráfica no se puede comunicar con el robot en tiempo real. Es por esto que se tienen 2 códigos, uno donde se simula la comunicación real entre la interfaz gráfica y el robot, y el código aplicado en la realidad.
+
+El código fuente desarrollado se dividió en dos componentes principales: la interfaz HMI y el módulo de control del robot. Debido a que RoboDK no permite una comunicación en tiempo real entre el programa y el robot, la interfaz gráfica no puede interactuar directamente con el manipulador físico en tiempo real. Por esta razón, se implementaron dos versiones del código: una primera destinada a simular la comunicación entre la interfaz gráfica y el robot dentro del entorno de RoboDK, y una segunda correspondiente al código aplicado en la implementación real con el robot de laboratorio.
+
 ### 5.1 Código con interfaz gráfica
+La interfaz HMI desarrollada para la estación de soldadura de PCB se estructuró como una plataforma de supervisión y control del proceso. En su panel izquierdo se ubican la selección de recetas, la tabla de componentes, la distribución de puntos de soldadura y los parámetros principales del proceso, como el pitch, el tiempo de soldadura y el número total de puntos. En la zona central se concentran las acciones de operación del robot, permitiendo ejecutar secuencias como la conexión con RoboDK, el desplazamiento a home, la aproximación, la validación de puntos y el inicio de la soldadura. Finalmente, en el panel derecho se visualiza el estado del sistema, incluyendo la condición operativa, la cantidad de puntos ejecutados y las alarmas activas. 
+
 El programa en Python puede consultarse aquí:
 [Ver código](src/HMI_Simulacion.py)
+
+
 ### 5.2 Código implementado en el robot real
 El programa en Python puede consultarse aquí:
 [Ver código](src/Codigo_Implementacio_Robot.py)
