@@ -331,6 +331,18 @@ Una vez completadas todas las PCB configuradas, el robot regresa a la posición 
 robot.MoveJ(Home)
 print("PCB's Completadas")
 ```
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=NdinlWy5ti0&t=1095s" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.youtube.com/vi/NdinlWy5ti0/hqdefault.jpg" alt="Miniatura del video de simulación" width="500"/>
+  </a>
+</div>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=NdinlWy5ti0&t=1095s" target="_blank" rel="noopener noreferrer">
+    Ver implementacion
+  </a>
+</p>
+
 ## 6. Código interfaz gráfica HMI
 La interfaz HMI fue desarrollada en *Python* utilizando las librerías *tkinter* y *ttk* para la construcción de la interfaz gráfica, *messagebox* para la gestión de mensajes, *threading* para la ejecución concurrente de la rutina de soldadura, time para la temporización del proceso, y las librerías *robolink* y *robomath* de RoboDK para la comunicación con el entorno de simulación y el manejo de operaciones cinemáticas. La interfaz permite seleccionar distintas recetas de PCB, visualizar la lista de componentes y los puntos de soldadura asociados, configurar parámetros del proceso como el pitch y el tiempo de soldadura, y ejecutar acciones como conectar RoboDK, cargar el robot, moverlo a home, desplazarlo a la pose de aproximación, validar puntos, iniciar la soldadura, pausar, detener, ejecutar una parada de emergencia y reiniciar el sistema.
 <p align="center">
