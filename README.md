@@ -6,7 +6,7 @@
   </picture>
 
   <h1>Proyecto Final- Robótica Industrial</h1>
-  <h2>Automatización del Proceso de Ensamblaje, Soldadura y Empaque de PCBs.</h2>
+  <h2>Automatización del Proceso de Soldadura de PCBs - Yaskawa Motoman MH6 “El Chambeador”.</h2>
 
   <p>
     <strong>Robótica - 2026-I</strong><br>
@@ -23,13 +23,13 @@
 * **Pablo de Jesus Arcila Mora**
 * **Marco Alejandro Morales Pantoja**
 * **Daniel Felipe Castro Galindo**
-* **Juan Diego Sáenz Ardila**
-* **Alejandra Sofia Monroy Socha**
+* **Juan ... ... ...**
+* **Alejandra ... ... ...**
 
-  
-## 1. Bitácora del desarrollo
+## Introducción 
+Este proyecto consistió en el diseño, implementación y validación de una rutina de soldadura sobre PCB utilizando un robot industrial ubicado en la Sala CAM, el Yaskawa Motoman MH6 alias “El Chambeador”; para este proyecto, la metodología empleada combinó simulación en RoboDK con ajustes empíricos de las posiciones articulares del robot, incorporando estrategias de cinemática directa e inversa para garantizar la precisión en los puntos de soldadura.
 
-## 2. Diagrama de flujo del proceso global y por estación
+## 1. Diagrama de flujo del proceso global y por estación
 
 ```mermaid
 flowchart TD
@@ -83,6 +83,69 @@ flowchart TD
 ```
 
 
+
+## 2. Bitácora del desarrollo
+Esta sesión tiene como finalidad el documentar el proceso, de manera cronológica, llevado a cabo durante el desarrollo e implementación de la rutina construida para que el Motoman "El Chambeador", fuese capaz de realizar la soldadura de PCB's
+
+### Fase 1: Medición del área de trabajo
+En la etapa inicial se realizó la medición del área de trabajo donde se instalaría la herramienta. Esta actividad permitió definir el espacio disponible, la ubicación de la PCB, la herramienta de sujeción para la PCB y para el Cautín y las zonas de aproximación necesarias para planear la trayectoria del robot.
+
+<img src="./IMG/Boceto%20zona%20de%20instalacion%20de%20la%20herramienta.jpeg" alt="Toma de medidas para la instalación de la herramienta" width="200">
+
+*Figura 1. Toma de medidas para la instalación de la herramienta.*
+
+<img src="./IMG/definicion%20pose%20de%20aproximacion.jpeg" alt="Definición pose de aproximación" width="200">
+
+*Figura 2. Definición pose de aproximación.*
+
+<img src="./IMG/definicion%20pose%20de%20aproximacion%202.jpeg" alt="Definición pose de soldadura" width="200">
+
+*Figura 3. Definición pose de soldadura.*
+
+**Nota**:Durante la primera definición de las poses de aproximación y de soldadura, las configuraciones se establecieron con base en los valores reportados por el Teach Pendant, ver imagen XX. Sin embargo, al intentar replicar estas posiciones en RoboDK se evidenció que las distancias mostradas no corresponden directamente a medidas en grados o milésimas de grado, sino que requieren una conversión específica para su correcta interpretación en el entorno de simulación. Debido a esta limitación, fue necesario volver a tomar las posiciones articulares, sincronizando el manipulador físico con RoboDK para garantizar la correspondencia entre las configuraciones reales y las simuladas.
+<img src="./IMG/Posicion%20articulaciones%20Teach%20pedant.jpeg" alt="Posición articulaciones Teach pedant" width="200">
+*Figura 3. Posición articulaciones Teach Pedant.*
+
+### Fase 2: Primera implementación del código
+En la primera implementación se trabajó con unos targets definidos de manera arbitraria en RoboDK, con el propósito de verificar que las rutinas generadas tuvieran un comportamiento similar al requerido para una tarea de soldadura.
+
+A partir de estos targets se construyó una rutina preliminar que permitió evaluar la viabilidad del movimiento general del robot y reconocer las primeras limitaciones entre la simulación y la ejecución real. ver [Version 1.0](./src/Codigo%20Rutina%20V1.0.py) 
+
+### Fase 3: Segunda implementación del código
+En la segunda implementación se comenzó a trabajar directamente con posiciones articulares. Inicialmente, la lógica del programa consistía en que, a partir de la pose de la PCB, el robot se desplazara primero a una pose de aproximación y posteriormente a la pose de la PCB, donde una vez alcanzada esta referencia, el sistema realizaba el desplazamiento hacia los puntos específicos donde debían ejecutarse los puntos de soldadura.
+
+Durante esta fase también fue necesario ajustar las posiciones articulares en laboratorio, teniendo en cuenta tanto las modificaciones realizadas en la herramienta como la correspondencia entre las poses obtenidas en RoboDK y las posiciones reales del robot. ver [Version 2.0](./src/Codigo%20Rutina%20V2.0.py)
+
+### Fase 4: Tercera implementación del código
+En la tercera implementación se adoptó una estrategia más robusta desde el punto de vista geométrico y cinemático, donde, primero se almacenó la pose de referencia de donde va ubicada la PCB y, mediante funciones nativas de Robodk que permiten la cinemática directa, se transformó en coordenadas cartesianas, para luego, a partir de dichas coordenadas, se aplicaron traslaciones para obtener las posiciones cartesianas asociadas a cada punto de soldadura; finalmente, sobre estas nuevas posiciones cartesianas se aplicó cinemática inversa (funcion nativa de Robodk) para calcular los posicionamientos articulares requeridos y así permitir que el robot alcanzara de forma controlada los diferentes puntos de soldadura.
+```python
+...
+#implementación de Cinematica Directa
+pose_pcb = robot.SolveFK(PCB) # SolveFK permite realizar la cinematica directa
+...
+#Implementación de Cinematica inversa
+pose_sold = pose_pcb * transl(x, y, z_soldadura)
+joints_sold = robot.SolveIK(pose_sold) #
+```
+**Nota:** los fragmentos de cogido mostrados anteriormente corresponden a ejemplos de como implementar estas funciones en Python mediante la API de Robodk. El código final implementado se describe mas adelante. 
+
+### Limitaciones durante las pruebas
+Uno de los factores que afectó de manera importante el desarrollo del proyecto fue la limitación asociada a la licencia de RoboDK. Estas restricciones generaron demoras en los tiempos de prueba, ya que el proceso de reinstalar el programa para conectar con el manipulador real resultó tedioso. Además, no fue posible incorporar adecuadamente el eje número 7, correspondiente al eje lineal. Como consecuencia, no siempre se podía desplazar el robot exactamente hasta la posición requerida dentro del riel.
+
+Para compensar esta ultima limitación, el robot se llevaba manualmente a una posición aproximada usando como referencia una marca establecida sobre el riel. Sin embargo, esta aproximación no garantizaba precisión absoluta, por lo que en diferentes jornadas de laboratorio fue necesario reajustar la ubicación del área de trabajo y reposicionar la váquela para obtener resultados aceptables.
+
+### Problemas observados en el proyecto
+Los principales problemas identificados estuvieron relacionados con la acumulación de errores. Entre ellos se destacan:
+- Error en la posición del eje lineal.
+- Variaciones en el posicionamiento de la PCB.
+- Tolerancias mecánicas y de montaje asociadas a la herramienta de soldadura y a la base para la váquela.
+
+Debido a la suma de estos factores, al repetir una misma prueba los puntos alcanzados por el robot no siempre coincidían exactamente, aun cuando la rutina ejecutada fuera nominalmente la misma.
+
+### Resultado obtenido
+A pesar de las dificultades presentadas durante la implementación, en el resultado final se logró un comportamiento satisfactorio en laboratorio. En particular, durante tres repeticiones consecutivas se obtuvieron resultados muy similares entre sí y cercanos al comportamiento esperado para la operación de soldadura sobre la PCB.
+
+Este resultado permitió validar la metodología de ajuste progresivo del programa y evidenció que, aunque existían limitaciones mecánicas y de posicionamiento, la estrategia final de trabajo ofrecía una base funcional para la ejecución de la tarea.
 
 
 ## 3.Diseño del gripper y del workobject
