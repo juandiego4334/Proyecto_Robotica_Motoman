@@ -470,7 +470,7 @@ Como trabajo futuro se recomienda:
 - Diseñar una herramienta más robusta que permita suministrar pasta de soldadura y mantener una punta adecuada para el proceso.
 - Sustituir la base de la herramienta, actualmente fabricada en PLA, por un material con mayor resistencia térmica para evitar deformaciones por calor.
 - Optimizar la fijación de la PCB y del área de trabajo para minimizar desplazamientos durante la ejecución.
-- 
+  
 ## 8. Diagrama de flujo de acciones del robot
 
 ```mermaid
