@@ -440,6 +440,37 @@ El siguiente video sirve para mirar a detalle la funcionalidad de la interfaz HM
 
 ## 7. Comparación manual vs automatizado
 
+Durante la etapa de implementación se realizaron diversas pruebas de soldadura con el fin de evaluar el comportamiento del sistema automatizado frente a una soldadura manual. Estas pruebas permitieron evidenciar las limitaciones asociadas a los errores de aproximación, las tolerancias mecánicas del sistema y la dificultad para fijar de manera completamente estable el riel y la posición de la PCB. Como resultado, las primeras pruebas no alcanzaron la precisión esperada, por lo que las imágenes correspondientes a estos ensayos se muestran a continuación.
+
+<div align="center">
+  <img src="./IMG/Prueba_1.png" alt="Prueba inicial de soldadura" width="400">
+  <p><em>Figura 8. Pruebas de soldadura durante la etapa de implementación.</em></p>
+</div>
+
+En la implementación final, antes de activar el cautín, se ejecutó una aproximación preliminar para verificar que los puntos de soldadura coincidieran correctamente con la punta de la herramienta. Una vez validada esta alineación, se encendió el cautín y se procedió con la soldadura de la PCB, registrando el proceso en video. Esta estrategia permitió corregir parcialmente los errores de posicionamiento y mejorar la consistencia del resultado final.
+<div align="center">
+  <img src="./IMG/Soldadura%20Final.jpeg" alt="Soldadura Final" width="400">
+  <p><em>Figura 9. Soldadura Final.</em></p>
+</div>
+
+En comparación, la soldadura manual mostró mejores resultados en términos de precisión puntual durante las primeras pruebas, principalmente porque no estaba sujeta a los errores acumulados del sistema de posicionamiento. Sin embargo, la automatización ofrece una ventaja importante a largo plazo: permite repetir el proceso bajo las mismas condiciones y con mayor uniformidad, especialmente en escenarios de producción repetitiva de múltiples PCBs.
+
+Las principales fuentes de error observadas en la etapa automatizada fueron:
+- Las tolerancias de aproximación del robot.
+- La falta de fijación absoluta del riel y de la mesa de trabajo.
+- El desgaste de la punta del cautín.
+- La dificultad para manipular la pasta de soldadura con la herramienta disponible.
+
+Aun así, se considera que con mejoras en el sistema mecánico y en el control de la trayectoria, la automatización puede superar la consistencia de la soldadura manual en tareas repetitivas.
+
+### 7.1. Recomendaciones y mejoras futuras
+Como trabajo futuro se recomienda:
+- Implementar un software que permita incorporar un eje adicional sin depender de restricciones de licencia.
+- Mejorar la precisión del sistema de posicionamiento del riel para reducir errores acumulados.
+- Diseñar una herramienta más robusta que permita suministrar pasta de soldadura y mantener una punta adecuada para el proceso.
+- Sustituir la base de la herramienta, actualmente fabricada en PLA, por un material con mayor resistencia térmica para evitar deformaciones por calor.
+- Optimizar la fijación de la PCB y del área de trabajo para minimizar desplazamientos durante la ejecución.
+- 
 ## 8. Diagrama de flujo de acciones del robot
 
 ```mermaid
@@ -467,15 +498,15 @@ flowchart TD
     Emerg -- Sí --> FaultEmerg[FAULT: detener, reset y home seguro]
     FaultEmerg --> Home
     Emerg -- No --> L4[Descender a punto de soldadura]
-    L4 --> L5[Activar herramienta y esperar tiempo de soldadura]
+    L4 --> L5[Esperar tiempo de soldadura]
     L5 --> L6[Retornar a punto de aproximación]
     L6 --> L7{Quedan más puntos?}
     L7 -- Sí --> L1
-    L7 -- No --> Verif[Verificar log de puntos soldados + evidencia]
+    L7 -- No --> Verif[Verificar log de puntos soldados]
     Verif --> VerifOK{Todos los puntos verificados?}
     VerifOK -- No --> Reproceso[FAULT: marcar Reproceso y reintentar]
     Reproceso --> Aprox
-    VerifOK -- Sí --> ReturnAprox[Volver al target de aproximación]
+    VerifOK -- Sí --> ReturnAprox[Volver a pose aproximación]
     ReturnAprox --> ReturnHome[Volver a Home]
     ReturnHome --> DONE[DONE: entregar señal PCB Soldada a Etapa 4]
     DONE --> Fin([Fin del ciclo de estación])
