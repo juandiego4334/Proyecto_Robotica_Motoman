@@ -225,7 +225,7 @@ Estas mejoras permitirían reducir la transferencia de calor por conducción y r
 En la etapa de simulación, una vez desarrollado el código de control, se procedió a su verificación en el entorno de RoboDK. En esta fase se ejecutaron múltiples pruebas para observar el comportamiento del manipulador y ajustar la trayectoria hasta obtener un movimiento coherente con la tarea de soldadura propuesta. La simulación completa puede evidenciarse en el siguiente video, donde se aprecia la secuencia de aproximación, posicionamiento sobre la PCB y ejecución de los puntos de soldadura.
 
 <div align="center">
-  <a href="https://youtu.be/NdinlWy5ti0?t=1508" target="_blank" rel="noopener noreferrer">
+  <a href="https://www.youtube.com/watch?v=NdinlWy5ti0&t=1508s" target="_blank" rel="noopener noreferrer">
     <img src="https://img.youtube.com/vi/NdinlWy5ti0/hqdefault.jpg" alt="Miniatura del video de simulación" width="500"/>
   </a>
 </div>
@@ -420,8 +420,8 @@ El código completo del programa en Python puede consultarse aquí:
 
 El siguiente video sirve para mirar a detalle la funcionalidad de la interfaz HMI
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=O-p1SuG4cyI" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.youtube.com/vi/O-p1SuG4cyI/hqdefault.jpg" alt="Miniatura del video de simulación" width="500"/>
+  <a href="https://youtu.be/NdinlWy5ti0?t=486" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.youtube.com/vi/NdinlWy5ti0/hqdefault.jpg" alt="Miniatura del video de simulación" width="500"/>
   </a>
 </div>
 
